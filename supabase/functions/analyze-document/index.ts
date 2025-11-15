@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const HF_TOKEN = Deno.env.get("HF_TOKEN");
 const MODEL_ID = "ayushsingh11/fake-news-model";
+const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${MODEL_ID}`;
 
 function cleanText(text: string): string {
   let cleaned = text.replace(/https?:\/\/\S+/gi, "");
@@ -86,21 +87,26 @@ serve(async (req) => {
 
     console.log("Extracted text length:", cleanedText.length);
 
-    // Predict using HF model
-    const response = await fetch(
-      `https://api-inference.huggingface.co/models/${MODEL_ID}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${HF_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          inputs: cleanedText,
-          options: { wait_for_model: true },
-        }),
-      }
-    );
+    if (!HF_TOKEN) {
+      console.error("HF_TOKEN not configured");
+      return new Response(
+        JSON.stringify({ error: "HF_TOKEN not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Predict using HF Router API (NEW ENDPOINT)
+    const response = await fetch(HF_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${HF_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        inputs: cleanedText,
+        options: { wait_for_model: true },
+      }),
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
