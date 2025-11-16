@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const HF_TOKEN = Deno.env.get("HF_TOKEN");
 const MODEL_ID = "jy46604790/Fake-News-Bert-Detect";
-const HF_API_URL = `https://api-inference.huggingface.co/models/${MODEL_ID}`;
+const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${MODEL_ID}`;
 
 function cleanText(text: string): string {
   let cleaned = text.replace(/https?:\/\/\S+/gi, "");
@@ -112,7 +112,7 @@ serve(async (req) => {
       );
     }
 
-    // Predict using HF Router API (NEW ENDPOINT)
+    // Call HF Router API
     const response = await fetch(HF_API_URL, {
       method: "POST",
       headers: {
