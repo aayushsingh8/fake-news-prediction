@@ -34,14 +34,14 @@ const TextChecker = () => {
 
       setResult(data);
       toast({
-        title: "Analysis Complete",
-        description: "Your text has been analyzed successfully",
+        title: "Prediction Complete",
+        description: "Your text has been predicted successfully",
       });
     } catch (error: any) {
       console.error("Error:", error);
       toast({
-        title: "Analysis Failed",
-        description: error.message || "Failed to analyze text",
+        title: "Prediction Failed",
+        description: error.message || "Failed to predict text",
         variant: "destructive",
       });
     } finally {
@@ -85,7 +85,7 @@ const TextChecker = () => {
                 Analyzing...
               </>
             ) : (
-              "Analyze Text"
+              "Predict Text"
             )}
           </Button>
           

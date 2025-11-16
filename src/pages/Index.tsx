@@ -20,10 +20,10 @@ const Index = () => {
         <main className="container mx-auto px-4 py-12 max-w-5xl">
           <div className="text-center mb-12 animate-fade-in">
             <h1 className="text-5xl md:text-6xl font-bold mb-4 gradient-text">
-              Fake News Detection
+              Fake News Prediction
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Powered by AI to identify misinformation. Analyze text, URLs, or documents instantly.
+              Powered by AI to predict misinformation. Predict text, URLs, or documents instantly.
             </p>
           </div>
 
@@ -39,7 +39,7 @@ const Index = () => {
                 value="url"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
               >
-                URL Analyzer
+                URL Predictor
               </TabsTrigger>
               <TabsTrigger 
                 value="document"

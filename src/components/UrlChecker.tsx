@@ -37,14 +37,14 @@ const UrlChecker = () => {
       setResult(data.prediction);
       setExtractedText(data.extracted_text);
       toast({
-        title: "Analysis Complete",
-        description: "Article extracted and analyzed successfully",
+        title: "Prediction Complete",
+        description: "Article extracted and predicted successfully",
       });
     } catch (error: any) {
       console.error("Error:", error);
       toast({
-        title: "Analysis Failed",
-        description: error.message || "Failed to extract and analyze URL",
+        title: "Prediction Failed",
+        description: error.message || "Failed to extract and predict URL",
         variant: "destructive",
       });
     } finally {
@@ -82,13 +82,13 @@ const UrlChecker = () => {
                 Extracting...
               </>
             ) : (
-              "Analyze URL"
+              "Predict URL"
             )}
           </Button>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          We'll extract and analyze the article content from the provided URL
+          We'll extract and predict the article content from the provided URL
         </p>
       </div>
 
