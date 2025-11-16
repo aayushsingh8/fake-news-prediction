@@ -6,10 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const HF_TOKEN = Deno.env.get("HF_TOKEN");
-const MODEL_ID = "jy46604790/Fake-News-Bert-Detect";
-const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${MODEL_ID}`;
-
 function cleanText(text: string): string {
   let cleaned = text.replace(/https?:\/\/\S+/gi, "");
   cleaned = cleaned.replace(/<[^>]*>/g, "");
@@ -87,64 +83,40 @@ serve(async (req) => {
 
     console.log("Extracted text length:", cleanedText.length);
 
-    if (!HF_TOKEN) {
-      console.error("HF_TOKEN not configured");
+    // Call ensemble-predict function with the extracted text
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      console.error("Supabase configuration missing");
       return new Response(
-        JSON.stringify({ error: "HF_TOKEN not configured" }),
+        JSON.stringify({ error: "Server configuration error" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Call HF Router API
-    const response = await fetch(HF_API_URL, {
+    const ensembleResponse = await fetch(`${SUPABASE_URL}/functions/v1/ensemble-predict`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${HF_TOKEN}`,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        inputs: cleanedText,
-        options: { wait_for_model: true },
-      }),
+      body: JSON.stringify({ text: cleanedText }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("HF API error:", response.status, errorText);
+    if (!ensembleResponse.ok) {
+      const errorText = await ensembleResponse.text();
+      console.error("Ensemble prediction error:", ensembleResponse.status, errorText);
       return new Response(
-        JSON.stringify({ error: "Model inference failed", details: errorText }),
-        { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Prediction failed", details: errorText }),
+        { status: ensembleResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const predictions = await response.json();
-    console.log("Predictions:", predictions);
-
-    let label = "UNKNOWN";
-    let score = 0;
-    let raw = predictions;
-
-    if (Array.isArray(predictions) && predictions.length > 0) {
-      const topPrediction = predictions.reduce((prev: any, current: any) =>
-        current.score > prev.score ? current : prev
-      );
-
-      if (topPrediction.label.toLowerCase().includes("fake") || topPrediction.label === "LABEL_0") {
-        label = "FAKE";
-      } else if (topPrediction.label.toLowerCase().includes("real") || topPrediction.label === "LABEL_1") {
-        label = "REAL";
-      }
-
-      score = topPrediction.score;
-    }
+    const ensembleData = await ensembleResponse.json();
 
     return new Response(
-      JSON.stringify({
-        text: cleanedText,
-        label,
-        score,
-        raw,
-      }),
+      JSON.stringify(ensembleData),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

@@ -11,7 +11,7 @@ const Header = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold gradient-text">Truth Guard</h1>
-              <p className="text-xs text-muted-foreground">AI-Powered Fact Verification</p>
+              <p className="text-xs text-muted-foreground">AI-Powered News Prediction</p>
             </div>
           </div>
           

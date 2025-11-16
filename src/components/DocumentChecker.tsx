@@ -74,8 +74,8 @@ const DocumentChecker = () => {
 
         setResult(data);
         toast({
-          title: "Analysis Complete",
-          description: "Your document has been analyzed successfully",
+          title: "Prediction Complete",
+          description: "Your document has been predicted successfully",
         });
         setLoading(false);
       };
@@ -88,8 +88,8 @@ const DocumentChecker = () => {
     } catch (error: any) {
       console.error("Error:", error);
       toast({
-        title: "Analysis Failed",
-        description: error.message || "Failed to analyze document",
+        title: "Prediction Failed",
+        description: error.message || "Failed to predict document",
         variant: "destructive",
       });
       setLoading(false);
@@ -158,10 +158,10 @@ const DocumentChecker = () => {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Analyzing Document...
+              Predicting...
             </>
           ) : (
-            "Analyze Document"
+            "Predict Document"
           )}
         </Button>
       </div>
