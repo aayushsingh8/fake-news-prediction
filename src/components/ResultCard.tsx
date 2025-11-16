@@ -1,7 +1,6 @@
-import { AlertCircle, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { AlertCircle, CheckCircle, ChevronDown, ChevronUp, Brain, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 
 interface ResultCardProps {
@@ -9,11 +8,26 @@ interface ResultCardProps {
     label: string;
     score: number;
     text?: string;
-    raw?: any[];
+    explanation?: string;
+    ensemble?: {
+      label: string;
+      confidence: number;
+      explanation: string;
+      models: {
+        bert?: any;
+        ai?: any;
+      };
+      weights?: {
+        bert: number;
+        ai: number;
+      };
+    };
+    raw?: any;
   };
 }
 
 const ResultCard = ({ result }: ResultCardProps) => {
+  const [showModels, setShowModels] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
   const isFake = result.label === "FAKE";
   const confidence = Math.round(result.score * 100);
@@ -34,7 +48,10 @@ const ResultCard = ({ result }: ResultCardProps) => {
           )}
           <div>
             <h3 className="text-xl font-bold text-foreground">Analysis Result</h3>
-            <p className="text-sm text-muted-foreground">AI-powered verification</p>
+            <p className="text-sm text-muted-foreground flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              Ensemble ML + AI prediction
+            </p>
           </div>
         </div>
 
@@ -71,6 +88,115 @@ const ResultCard = ({ result }: ResultCardProps) => {
         </p>
       </div>
 
+      {/* AI Explanation */}
+      {result.explanation && (
+        <div className="pt-4 border-t border-border/50">
+          <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+            <Brain className="w-4 h-4 text-primary" />
+            AI Analysis
+          </h4>
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+            <p className="text-sm text-foreground/90">
+              {result.explanation}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Model Breakdown */}
+      {result.ensemble?.models && (
+        <div className="pt-4 border-t border-border/50">
+          <Button
+            onClick={() => setShowModels(!showModels)}
+            variant="ghost"
+            className="w-full justify-between hover:bg-muted/50"
+          >
+            <span className="text-sm font-medium">View Model Predictions</span>
+            {showModels ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </Button>
+
+          {showModels && (
+            <div className="mt-3 space-y-3 animate-fade-in">
+              {/* BERT Model */}
+              {result.ensemble.models.bert && (
+                <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        BERT ML Model
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Weight: {(result.ensemble.weights?.bert || 0) * 100}%
+                      </span>
+                    </div>
+                    <Badge
+                      variant={result.ensemble.models.bert.label === "FAKE" ? "destructive" : "default"}
+                      className="text-xs"
+                    >
+                      {result.ensemble.models.bert.label}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary"
+                        style={{ width: `${Math.round(result.ensemble.models.bert.score * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-foreground">
+                      {Math.round(result.ensemble.models.bert.score * 100)}%
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Lovable AI Model */}
+              {result.ensemble.models.ai && (
+                <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        Gemini AI
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Weight: {(result.ensemble.weights?.ai || 0) * 100}%
+                      </span>
+                    </div>
+                    <Badge
+                      variant={result.ensemble.models.ai.label === "FAKE" ? "destructive" : "default"}
+                      className="text-xs"
+                    >
+                      {result.ensemble.models.ai.label}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-accent"
+                        style={{ width: `${Math.round(result.ensemble.models.ai.score * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-foreground">
+                      {Math.round(result.ensemble.models.ai.score * 100)}%
+                    </span>
+                  </div>
+                  {result.ensemble.models.ai.reasoning && (
+                    <p className="text-xs text-muted-foreground mt-2 italic">
+                      "{result.ensemble.models.ai.reasoning}"
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Analyzed Text Preview */}
       {result.text && (
         <div className="pt-4 border-t border-border/50">
@@ -87,15 +213,15 @@ const ResultCard = ({ result }: ResultCardProps) => {
         </div>
       )}
 
-      {/* Raw Scores Toggle */}
-      {result.raw && result.raw.length > 0 && (
+      {/* Raw Data Toggle */}
+      {result.raw && (
         <div className="pt-4 border-t border-border/50">
           <Button
             onClick={() => setShowRaw(!showRaw)}
             variant="ghost"
             className="w-full justify-between hover:bg-muted/50"
           >
-            <span className="text-sm font-medium">View Raw Scores</span>
+            <span className="text-sm font-medium">View Raw Response</span>
             {showRaw ? (
               <ChevronUp className="w-4 h-4" />
             ) : (
@@ -104,20 +230,10 @@ const ResultCard = ({ result }: ResultCardProps) => {
           </Button>
 
           {showRaw && (
-            <div className="mt-3 space-y-2 animate-fade-in">
-              {result.raw.map((score: any, idx: number) => (
-                <div
-                  key={idx}
-                  className="flex justify-between items-center p-3 bg-muted/30 rounded-lg"
-                >
-                  <span className="text-sm font-medium text-foreground">
-                    {score.label}
-                  </span>
-                  <span className="text-sm font-mono text-muted-foreground">
-                    {(score.score * 100).toFixed(2)}%
-                  </span>
-                </div>
-              ))}
+            <div className="mt-3 bg-muted/30 rounded-lg p-3 max-h-[200px] overflow-y-auto animate-fade-in">
+              <pre className="text-xs text-muted-foreground font-mono">
+                {JSON.stringify(result.raw, null, 2)}
+              </pre>
             </div>
           )}
         </div>

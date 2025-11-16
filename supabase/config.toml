@@ -1,1 +1,13 @@
 project_id = "hgswaoguurogqayjinap"
+
+[functions.predict-text]
+verify_jwt = false
+
+[functions.extract-url]
+verify_jwt = false
+
+[functions.analyze-document]
+verify_jwt = false
+
+[functions.ensemble-predict]
+verify_jwt = false
