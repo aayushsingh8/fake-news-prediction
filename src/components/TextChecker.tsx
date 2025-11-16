@@ -26,7 +26,7 @@ const TextChecker = () => {
     setResult(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke("predict-text", {
+      const { data, error } = await supabase.functions.invoke("ensemble-predict", {
         body: { text },
       });
 
