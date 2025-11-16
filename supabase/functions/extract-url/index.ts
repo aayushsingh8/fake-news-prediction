@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 const HF_TOKEN = Deno.env.get("HF_TOKEN");
-const MODEL_ID = "ayushsingh11/fake-news-model";
+const MODEL_ID = "AyushSingh2278/fake-news-detector";
 const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${MODEL_ID}`;
 
 function cleanText(text: string): string {
