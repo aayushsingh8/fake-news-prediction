@@ -1,8 +1,8 @@
-# Welcome to your Lovable project
+# Welcome to Fake News Prediction using ML
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/1dd5f8b7-2fb2-406a-9df0-a9aaa8d3738d
+**URL**: https://fake-news-prediction.lovable.app
 
 ## How can I edit this code?
 
