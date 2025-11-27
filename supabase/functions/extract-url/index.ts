@@ -118,7 +118,10 @@ serve(async (req) => {
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ text: cleanedText }),
+      body: JSON.stringify({ 
+        text: cleanedText,
+        sourceUrl: url 
+      }),
     });
 
     if (!ensembleResponse.ok) {
