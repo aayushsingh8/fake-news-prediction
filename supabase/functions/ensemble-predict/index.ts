@@ -64,8 +64,8 @@ async function getBertPrediction(text: string) {
   return null;
 }
 
-async function getLovableAIPrediction(text: string, sourceUrl?: string) {
-  console.log("Calling Lovable AI (Gemini Pro)...");
+async function getMLPrediction(text: string, sourceUrl?: string) {
+  console.log("Calling ML model (Gemini Pro)...");
   
   // Check if source is from a credible news organization
   const credibleSources = [
@@ -149,13 +149,13 @@ Respond ONLY in this exact JSON format:
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("Lovable AI error:", response.status, errorText);
+    console.error("ML model error:", response.status, errorText);
     return null;
   }
 
   const data = await response.json();
   const content = data.choices[0].message.content;
-  console.log("Lovable AI response:", content);
+  console.log("ML model response:", content);
 
   try {
     // Extract JSON from response (handle markdown code blocks)
@@ -171,18 +171,18 @@ Respond ONLY in this exact JSON format:
       reasoning: result.reasoning,
     };
   } catch (e) {
-    console.error("Failed to parse Lovable AI response:", e);
+    console.error("Failed to parse ML model response:", e);
     return null;
   }
 }
 
-function ensembleVoting(bertResult: any, aiResult: any) {
-  // Weighted ensemble: BERT (20%) + Lovable AI (80%)
-  // Lovable AI (Gemini Pro) gets much higher weight for better accuracy
+function ensembleVoting(bertResult: any, mlResult: any) {
+  // Weighted ensemble: BERT (20%) + Advanced ML (80%)
+  // Advanced ML model gets much higher weight for better accuracy
   const bertWeight = 0.2;
-  const aiWeight = 0.8;
+  const mlWeight = 0.8;
 
-  if (!bertResult && !aiResult) {
+  if (!bertResult && !mlResult) {
     return {
       label: "UNKNOWN",
       confidence: 0,
@@ -192,14 +192,14 @@ function ensembleVoting(bertResult: any, aiResult: any) {
 
   if (!bertResult) {
     return {
-      label: aiResult.label,
-      confidence: aiResult.score * aiWeight,
-      explanation: `Only AI model available: ${aiResult.reasoning}`,
-      models: { ai: aiResult },
+      label: mlResult.label,
+      confidence: mlResult.score * mlWeight,
+      explanation: `Only ML model available: ${mlResult.reasoning}`,
+      models: { ml: mlResult },
     };
   }
 
-  if (!aiResult) {
+  if (!mlResult) {
     return {
       label: bertResult.label,
       confidence: bertResult.score * bertWeight,
@@ -210,23 +210,23 @@ function ensembleVoting(bertResult: any, aiResult: any) {
 
   // Calculate weighted scores for FAKE
   const bertFakeScore = bertResult.label === "FAKE" ? bertResult.score : (1 - bertResult.score);
-  const aiFakeScore = aiResult.label === "FAKE" ? aiResult.score : (1 - aiResult.score);
+  const mlFakeScore = mlResult.label === "FAKE" ? mlResult.score : (1 - mlResult.score);
   
-  const ensembleFakeScore = (bertFakeScore * bertWeight) + (aiFakeScore * aiWeight);
+  const ensembleFakeScore = (bertFakeScore * bertWeight) + (mlFakeScore * mlWeight);
   const finalLabel = ensembleFakeScore > 0.5 ? "FAKE" : "REAL";
   const finalConfidence = ensembleFakeScore > 0.5 ? ensembleFakeScore : (1 - ensembleFakeScore);
 
   return {
     label: finalLabel,
     confidence: finalConfidence,
-    explanation: aiResult.reasoning || "Ensemble prediction from BERT + AI models",
+    explanation: mlResult.reasoning || "Ensemble prediction from BERT + ML models",
     models: {
       bert: bertResult,
-      ai: aiResult,
+      ml: mlResult,
     },
     weights: {
       bert: bertWeight,
-      ai: aiWeight,
+      ml: mlWeight,
     },
   };
 }
@@ -259,13 +259,13 @@ serve(async (req) => {
     }
 
     // Run both models in parallel
-    const [bertResult, aiResult] = await Promise.all([
+    const [bertResult, mlResult] = await Promise.all([
       getBertPrediction(cleanedText),
-      getLovableAIPrediction(cleanedText, sourceUrl),
+      getMLPrediction(cleanedText, sourceUrl),
     ]);
 
     // Combine predictions using ensemble voting
-    const ensembleResult = ensembleVoting(bertResult, aiResult);
+    const ensembleResult = ensembleVoting(bertResult, mlResult);
 
     return new Response(
       JSON.stringify({
@@ -276,7 +276,7 @@ serve(async (req) => {
         ensemble: ensembleResult,
         raw: {
           bert: bertResult,
-          ai: aiResult,
+          ml: mlResult,
         },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

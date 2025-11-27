@@ -23,7 +23,7 @@ const Index = () => {
               Fake News Prediction
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Powered by AI to predict misinformation. Predict text, URLs, or documents instantly.
+              Powered by ML models to predict misinformation. Predict text, URLs, or documents instantly.
             </p>
           </div>
 

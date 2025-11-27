@@ -15,11 +15,11 @@ interface ResultCardProps {
       explanation: string;
       models: {
         bert?: any;
-        ai?: any;
+        ml?: any;
       };
       weights?: {
         bert: number;
-        ai: number;
+        ml: number;
       };
     };
     raw?: any;
@@ -50,7 +50,7 @@ const ResultCard = ({ result }: ResultCardProps) => {
             <h3 className="text-xl font-bold text-foreground">Analysis Result</h3>
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
-              Ensemble ML + AI prediction
+              Ensemble ML prediction
             </p>
           </div>
         </div>
@@ -88,12 +88,12 @@ const ResultCard = ({ result }: ResultCardProps) => {
         </p>
       </div>
 
-      {/* AI Explanation */}
+      {/* ML Explanation */}
       {result.explanation && (
         <div className="pt-4 border-t border-border/50">
           <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <Brain className="w-4 h-4 text-primary" />
-            AI Analysis
+            ML Analysis
           </h4>
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
             <p className="text-sm text-foreground/90">
@@ -154,40 +154,40 @@ const ResultCard = ({ result }: ResultCardProps) => {
                 </div>
               )}
 
-              {/* Lovable AI Model */}
-              {result.ensemble.models.ai && (
+              {/* Advanced ML Model */}
+              {result.ensemble.models.ml && (
                 <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-xs flex items-center gap-1">
                         <Sparkles className="w-3 h-3" />
-                        Gemini AI
+                        Advanced ML
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        Weight: {(result.ensemble.weights?.ai || 0) * 100}%
+                        Weight: {(result.ensemble.weights?.ml || 0) * 100}%
                       </span>
                     </div>
                     <Badge
-                      variant={result.ensemble.models.ai.label === "FAKE" ? "destructive" : "default"}
+                      variant={result.ensemble.models.ml.label === "FAKE" ? "destructive" : "default"}
                       className="text-xs"
                     >
-                      {result.ensemble.models.ai.label}
+                      {result.ensemble.models.ml.label}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
                       <div
                         className="h-full bg-accent"
-                        style={{ width: `${Math.round(result.ensemble.models.ai.score * 100)}%` }}
+                        style={{ width: `${Math.round(result.ensemble.models.ml.score * 100)}%` }}
                       />
                     </div>
                     <span className="text-xs font-medium text-foreground">
-                      {Math.round(result.ensemble.models.ai.score * 100)}%
+                      {Math.round(result.ensemble.models.ml.score * 100)}%
                     </span>
                   </div>
-                  {result.ensemble.models.ai.reasoning && (
+                  {result.ensemble.models.ml.reasoning && (
                     <p className="text-xs text-muted-foreground mt-2 italic">
-                      "{result.ensemble.models.ai.reasoning}"
+                      "{result.ensemble.models.ml.reasoning}"
                     </p>
                   )}
                 </div>
