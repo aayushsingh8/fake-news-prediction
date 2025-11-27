@@ -65,24 +65,46 @@ async function getBertPrediction(text: string) {
 }
 
 async function getLovableAIPrediction(text: string) {
-  console.log("Calling Lovable AI (Gemini)...");
+  console.log("Calling Lovable AI (Gemini Pro)...");
   
-  const systemPrompt = `You are an expert fake news detector. Analyze the given text and determine if it's FAKE or REAL news.
+  const systemPrompt = `You are an expert fake news prediction system with deep knowledge of journalism, fact-checking, and misinformation patterns.
 
-Consider these factors:
-1. Emotional manipulation and sensationalism
-2. Lack of credible sources or references
-3. Logical inconsistencies or contradictions
-4. Grammatical errors and poor writing quality
-5. Extreme claims without evidence
-6. Bias and one-sided arguments
-7. Misleading headlines vs actual content
+CRITICAL INSTRUCTION: Be EXTREMELY careful and accurate. Default to REAL unless you have strong evidence of fakeness.
 
-Respond in JSON format only:
+Analyze the given text using these sophisticated criteria:
+
+INDICATORS OF REAL NEWS:
+1. Specific dates, locations, and verifiable details
+2. Attribution to credible sources or official statements
+3. Neutral, factual tone without excessive emotion
+4. Consistent with known events and timelines
+5. Multiple sources or confirmable facts
+6. Professional writing quality
+7. Reasonable claims that align with reality
+8. Official announcements or statements
+
+INDICATORS OF FAKE NEWS:
+1. Extraordinary claims with NO credible sources
+2. Heavy emotional manipulation (fear, outrage, shock)
+3. Completely fabricated events or people
+4. Obvious logical contradictions
+5. Misleading headlines that contradict content
+6. Claims that contradict well-established facts
+7. Anonymous or suspicious sources only
+8. Too sensational to be true with no evidence
+
+IMPORTANT GUIDELINES:
+- Recent celebrity deaths, accidents, or events CAN be real - verify plausibility
+- News about public figures should be marked REAL if it contains specific details
+- Don't mark news as FAKE just because it's negative or surprising
+- Consider the context and check if the claims are reasonable
+- When in doubt between 0.4-0.6 confidence, lean toward REAL
+
+Respond ONLY in this exact JSON format:
 {
   "label": "FAKE" or "REAL",
   "confidence": 0.0 to 1.0,
-  "reasoning": "brief explanation"
+  "reasoning": "detailed explanation of your decision"
 }`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -92,12 +114,12 @@ Respond in JSON format only:
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
+      model: "google/gemini-2.5-pro",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Analyze this text:\n\n${text}` },
+        { role: "user", content: `Analyze this news text carefully and determine if it's FAKE or REAL:\n\n${text}` },
       ],
-      temperature: 0.3,
+      temperature: 0.2,
     }),
   });
 
@@ -131,10 +153,10 @@ Respond in JSON format only:
 }
 
 function ensembleVoting(bertResult: any, aiResult: any) {
-  // Weighted ensemble: BERT (40%) + Lovable AI (60%)
-  // Lovable AI gets higher weight due to reasoning capabilities
-  const bertWeight = 0.4;
-  const aiWeight = 0.6;
+  // Weighted ensemble: BERT (20%) + Lovable AI (80%)
+  // Lovable AI (Gemini Pro) gets much higher weight for better accuracy
+  const bertWeight = 0.2;
+  const aiWeight = 0.8;
 
   if (!bertResult && !aiResult) {
     return {
