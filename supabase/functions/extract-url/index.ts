@@ -191,7 +191,8 @@ serve(async (req) => {
         errorMessage.includes("timeout") || 
         errorMessage.includes("Could not find") ||
         errorMessage.includes("Connection failed") ||
-        errorMessage.includes("Failed to extract")) {
+        errorMessage.includes("Failed to extract") ||
+        errorMessage.includes("Failed to fetch URL:")) {
       statusCode = 400;
     }
     
