@@ -44,7 +44,23 @@ const UrlChecker = () => {
         body: { url },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Extract error message from the error object
+        let errorMessage = "Failed to extract and predict URL";
+        
+        // Try to get the error from the response
+        if (error.message) {
+          // The error might contain the actual error in the message
+          const errorMatch = error.message.match(/\{"error":"([^"]+)"\}/);
+          if (errorMatch && errorMatch[1]) {
+            errorMessage = errorMatch[1];
+          } else {
+            errorMessage = error.message;
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
 
       setResult(data.prediction);
       setExtractedText(data.extracted_text);
@@ -55,28 +71,9 @@ const UrlChecker = () => {
     } catch (error: any) {
       console.error("Error:", error);
       
-      // Show user-friendly error messages
-      let errorMessage = "Failed to extract and predict URL";
-      
-      if (error.message?.includes("Edge Function returned a non-2xx status code")) {
-        errorMessage = "Could not access the URL. Please check if the URL is correct and accessible.";
-      } else if (error.context?.body) {
-        // Try to parse the error from the edge function response
-        try {
-          const errorBody = typeof error.context.body === 'string' 
-            ? JSON.parse(error.context.body) 
-            : error.context.body;
-          errorMessage = errorBody.error || errorMessage;
-        } catch {
-          // Keep default message
-        }
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
       toast({
-        title: "Prediction Failed",
-        description: errorMessage,
+        title: "Analysis Failed",
+        description: error.message || "Failed to analyze URL. Please ensure the URL is valid and accessible.",
         variant: "destructive",
       });
     } finally {
@@ -98,7 +95,7 @@ const UrlChecker = () => {
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com/news-article"
+              placeholder="https://www.bbc.com/news/article-example"
               className="pl-10 bg-input/50 border-border focus:border-primary transition-colors"
             />
           </div>
@@ -120,7 +117,7 @@ const UrlChecker = () => {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          We'll extract and predict the article content from the provided URL
+          Enter a real news article URL from sites like BBC, CNN, Reuters, etc. We'll extract and analyze the content.
         </p>
       </div>
 
