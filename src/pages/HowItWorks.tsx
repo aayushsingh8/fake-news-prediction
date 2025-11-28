@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { ArrowRight, Database, Layers, CheckCircle } from "lucide-react";
 
 const HowItWorks = () => {
@@ -127,6 +128,8 @@ const HowItWorks = () => {
             </div>
           </div>
         </main>
+        
+        <Footer />
       </div>
     </div>
   );
