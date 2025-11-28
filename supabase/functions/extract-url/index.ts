@@ -16,60 +16,78 @@ function cleanText(text: string): string {
 }
 
 async function extractArticle(url: string): Promise<string> {
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; FakeNewsBot/1.0)",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch URL: ${response.status}`);
-  }
-
-  const html = await response.text();
-  const doc = new DOMParser().parseFromString(html, "text/html");
-
-  if (!doc) {
-    throw new Error("Failed to parse HTML");
-  }
-
-  // Remove unwanted elements
-  const unwanted = ["script", "style", "nav", "footer", "header", "aside", "iframe"];
-  unwanted.forEach((tag) => {
-    const elements = doc.querySelectorAll(tag);
-    elements.forEach((el) => {
-      if (el.parentNode) {
-        el.parentNode.removeChild(el);
-      }
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; FakeNewsBot/1.0)",
+      },
+      // Add timeout to prevent hanging
+      signal: AbortSignal.timeout(10000), // 10 second timeout
     });
-  });
 
-  // Try to find main content
-  const selectors = [
-    "article",
-    '[role="main"]',
-    ".article-content",
-    ".post-content",
-    ".entry-content",
-    "main",
-  ];
-
-  let content = "";
-  for (const selector of selectors) {
-    const element = doc.querySelector(selector);
-    if (element) {
-      content = element.textContent || "";
-      break;
+    if (!response.ok) {
+      throw new Error(`Failed to fetch URL: ${response.status} ${response.statusText}`);
     }
-  }
 
-  // Fallback to body if no main content found
-  if (!content) {
-    const body = doc.querySelector("body");
-    content = body?.textContent || "";
-  }
+    const html = await response.text();
+    const doc = new DOMParser().parseFromString(html, "text/html");
 
-  return content.trim();
+    if (!doc) {
+      throw new Error("Failed to parse HTML");
+    }
+
+    // Remove unwanted elements
+    const unwanted = ["script", "style", "nav", "footer", "header", "aside", "iframe"];
+    unwanted.forEach((tag) => {
+      const elements = doc.querySelectorAll(tag);
+      elements.forEach((el) => {
+        if (el.parentNode) {
+          el.parentNode.removeChild(el);
+        }
+      });
+    });
+
+    // Try to find main content
+    const selectors = [
+      "article",
+      '[role="main"]',
+      ".article-content",
+      ".post-content",
+      ".entry-content",
+      "main",
+    ];
+
+    let content = "";
+    for (const selector of selectors) {
+      const element = doc.querySelector(selector);
+      if (element) {
+        content = element.textContent || "";
+        break;
+      }
+    }
+
+    // Fallback to body if no main content found
+    if (!content) {
+      const body = doc.querySelector("body");
+      content = body?.textContent || "";
+    }
+
+    return content.trim();
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new Error("Request timeout: The URL took too long to respond");
+      }
+      if (error.message.includes("dns") || error.message.includes("DNS")) {
+        throw new Error("Invalid URL: Could not find the website. Please check the URL and try again.");
+      }
+      if (error.message.includes("connection") || error.message.includes("ECONNREFUSED")) {
+        throw new Error("Connection failed: Unable to connect to the website");
+      }
+      throw error;
+    }
+    throw new Error("Failed to fetch article content");
+  }
 }
 
 serve(async (req) => {
@@ -83,6 +101,25 @@ serve(async (req) => {
     if (!url || typeof url !== "string") {
       return new Response(
         JSON.stringify({ error: "Invalid input: url is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate URL format
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid URL format. Please enter a valid URL (e.g., https://example.com/article)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Only allow http and https protocols
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return new Response(
+        JSON.stringify({ error: "Only HTTP and HTTPS URLs are supported" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
