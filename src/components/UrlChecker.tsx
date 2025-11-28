@@ -23,6 +23,18 @@ const UrlChecker = () => {
       return;
     }
 
+    // Basic URL validation
+    try {
+      new URL(url);
+    } catch {
+      toast({
+        title: "Invalid URL",
+        description: "Please enter a valid URL (e.g., https://example.com/article)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     setResult(null);
     setExtractedText("");
@@ -42,9 +54,29 @@ const UrlChecker = () => {
       });
     } catch (error: any) {
       console.error("Error:", error);
+      
+      // Show user-friendly error messages
+      let errorMessage = "Failed to extract and predict URL";
+      
+      if (error.message?.includes("Edge Function returned a non-2xx status code")) {
+        errorMessage = "Could not access the URL. Please check if the URL is correct and accessible.";
+      } else if (error.context?.body) {
+        // Try to parse the error from the edge function response
+        try {
+          const errorBody = typeof error.context.body === 'string' 
+            ? JSON.parse(error.context.body) 
+            : error.context.body;
+          errorMessage = errorBody.error || errorMessage;
+        } catch {
+          // Keep default message
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Prediction Failed",
-        description: error.message || "Failed to extract and predict URL",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
