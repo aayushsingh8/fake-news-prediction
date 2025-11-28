@@ -1,10 +1,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Link2 } from "lucide-react";
+import { Loader2, Link2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ResultCard from "./ResultCard";
+
+// Example working news URLs for testing
+const EXAMPLE_URLS = [
+  "https://www.bbc.com/news/technology",
+  "https://www.reuters.com/world/",
+  "https://www.theguardian.com/technology",
+];
 
 const UrlChecker = () => {
   const [url, setUrl] = useState("");
@@ -81,12 +88,32 @@ const UrlChecker = () => {
     }
   };
 
+  const handleTryExample = () => {
+    const randomUrl = EXAMPLE_URLS[Math.floor(Math.random() * EXAMPLE_URLS.length)];
+    setUrl(randomUrl);
+    toast({
+      title: "Example URL Loaded",
+      description: "Click 'Predict URL' to analyze this news article",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="glass-card p-6 rounded-2xl space-y-4 shadow-[var(--shadow-card)]">
-        <label className="text-sm font-medium text-foreground">
-          Enter Article URL
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium text-foreground">
+            Enter Article URL
+          </label>
+          <Button
+            onClick={handleTryExample}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+          >
+            <Sparkles className="w-3 h-3 mr-1" />
+            Try Example
+          </Button>
+        </div>
         
         <div className="flex gap-3">
           <div className="relative flex-1">
@@ -95,7 +122,7 @@ const UrlChecker = () => {
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://www.bbc.com/news/article-example"
+              placeholder="https://www.bbc.com/news/technology"
               className="pl-10 bg-input/50 border-border focus:border-primary transition-colors"
             />
           </div>
@@ -117,7 +144,7 @@ const UrlChecker = () => {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Enter a real news article URL from sites like BBC, CNN, Reuters, etc. We'll extract and analyze the content.
+          Paste any existing news article URL from major news sites. Click "Try Example" to test with a working URL.
         </p>
       </div>
 
