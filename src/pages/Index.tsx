@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import TextChecker from "@/components/TextChecker";
 import UrlChecker from "@/components/UrlChecker";
 import DocumentChecker from "@/components/DocumentChecker";
@@ -62,6 +63,8 @@ const Index = () => {
             </TabsContent>
           </Tabs>
         </main>
+        
+        <Footer />
       </div>
     </div>
   );

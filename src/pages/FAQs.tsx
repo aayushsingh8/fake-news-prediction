@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import {
   Accordion,
   AccordionContent,
@@ -191,6 +192,8 @@ const FAQs = () => {
             </Accordion>
           </div>
         </main>
+        
+        <Footer />
       </div>
     </div>
   );

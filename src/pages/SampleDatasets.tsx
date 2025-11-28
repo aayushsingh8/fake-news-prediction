@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Link as LinkIcon, FileDown, Copy } from "lucide-react";
@@ -264,6 +265,8 @@ const SampleDatasets = () => {
             </section>
           </div>
         </main>
+        
+        <Footer />
       </div>
     </div>
   );
