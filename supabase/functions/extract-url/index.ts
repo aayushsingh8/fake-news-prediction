@@ -181,9 +181,23 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error in extract-url:", error);
+    
+    // Determine appropriate status code based on error type
+    let statusCode = 500;
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    
+    // Client errors should return 400, not 500
+    if (errorMessage.includes("Invalid URL") || 
+        errorMessage.includes("timeout") || 
+        errorMessage.includes("Could not find") ||
+        errorMessage.includes("Connection failed") ||
+        errorMessage.includes("Failed to extract")) {
+      statusCode = 400;
+    }
+    
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: errorMessage }),
+      { status: statusCode, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
