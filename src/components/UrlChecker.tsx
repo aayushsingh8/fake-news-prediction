@@ -1,24 +1,70 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Link2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ResultCard from "./ResultCard";
+import UrlHistory from "./UrlHistory";
+import TrendingArticles from "./TrendingArticles";
+import UrlPreview from "./UrlPreview";
 
 // Example working news URLs for testing (homepage/section pages with articles)
 const EXAMPLE_URLS = [
   "https://lite.cnn.com/",
   "https://www.bbc.com/news",
   "https://text.npr.org/",
+  "https://www.reuters.com/world/",
+  "https://apnews.com/",
+  "https://www.theguardian.com/international"
 ];
+
+interface HistoryItem {
+  url: string;
+  timestamp: number;
+  result?: string;
+}
 
 const UrlChecker = () => {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [extractedText, setExtractedText] = useState("");
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const { toast } = useToast();
+
+  // Load history from localStorage
+  useEffect(() => {
+    const savedHistory = localStorage.getItem("urlHistory");
+    if (savedHistory) {
+      try {
+        setHistory(JSON.parse(savedHistory));
+      } catch (error) {
+        console.error("Failed to parse history:", error);
+      }
+    }
+  }, []);
+
+  // Save history to localStorage
+  const saveToHistory = (url: string, result?: string) => {
+    const newItem: HistoryItem = {
+      url,
+      timestamp: Date.now(),
+      result
+    };
+    const newHistory = [newItem, ...history.filter(item => item.url !== url)].slice(0, 10);
+    setHistory(newHistory);
+    localStorage.setItem("urlHistory", JSON.stringify(newHistory));
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem("urlHistory");
+    toast({
+      title: "History Cleared",
+      description: "URL history has been cleared",
+    });
+  };
 
   const handleAnalyze = async () => {
     if (!url.trim()) {
@@ -71,6 +117,7 @@ const UrlChecker = () => {
 
       setResult(data.prediction);
       setExtractedText(data.extracted_text);
+      saveToHistory(url, data.prediction?.label);
       toast({
         title: "Prediction Complete",
         description: "Article extracted and predicted successfully",
@@ -99,6 +146,10 @@ const UrlChecker = () => {
 
   return (
     <div className="space-y-6">
+      {/* Trending Articles */}
+      <TrendingArticles onSelectUrl={setUrl} />
+
+      {/* URL Input Card */}
       <div className="glass-card p-6 rounded-2xl space-y-4 shadow-[var(--shadow-card)]">
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium text-foreground">
@@ -147,6 +198,16 @@ const UrlChecker = () => {
           Works best with free news sites (BBC, CNN, Reuters, AP News). Paywalled sites (NYTimes, WSJ) and sites blocking bots won't work. Use homepage or section URLs for best results.
         </p>
       </div>
+
+      {/* URL Preview */}
+      {url && <UrlPreview url={url} />}
+
+      {/* URL History */}
+      <UrlHistory 
+        history={history} 
+        onSelectUrl={setUrl}
+        onClearHistory={clearHistory}
+      />
 
       {extractedText && (
         <div className="glass-card p-6 rounded-2xl space-y-3 shadow-[var(--shadow-card)]">

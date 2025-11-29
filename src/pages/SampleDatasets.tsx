@@ -69,14 +69,18 @@ const SampleDatasets = () => {
       "https://www.bbc.com/news",
       "https://www.reuters.com/world/",
       "https://apnews.com/",
-      "https://text.npr.org/"
+      "https://text.npr.org/",
+      "https://www.theguardian.com/international",
+      "https://www.aljazeera.com/",
+      "https://www.dw.com/en/top-stories/s-9097"
     ],
     fake: [
-      "https://fake-news-site.com/shocking-celebrity-secret",
-      "https://conspiracy-today.net/government-coverup-exposed",
-      "https://miracle-cures-daily.com/cancer-cure-hidden",
-      "https://viral-hoax.info/aliens-confirmed-by-nasa",
-      "https://clickbait-news.net/you-wont-believe-what-happened"
+      "Example patterns of fake news URLs (these won't work as they're fictional):",
+      "sensational-breaking-news.com/miracle-cure",
+      "conspiracy-truth-exposed.net/secret-revealed",
+      "viral-clickbait-daily.com/shocking-discovery",
+      "fake-celebrity-gossip.info/scandal-exposed",
+      "hoax-news-network.net/government-coverup"
     ]
   };
 
@@ -192,22 +196,21 @@ const SampleDatasets = () => {
 
                 <Card className="glass-card border-destructive/50">
                   <CardHeader>
-                    <CardTitle className="text-destructive">Fake News URLs</CardTitle>
-                    <CardDescription>Links from unreliable sources (examples)</CardDescription>
+                    <CardTitle className="text-destructive">Fake News URL Patterns</CardTitle>
+                    <CardDescription>Common patterns in fake news URLs (examples only - won't work)</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     {urlSamples.fake.map((url, index) => (
-                      <div key={index} className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => copyToClipboard(url)}
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                        <span className="text-xs text-muted-foreground truncate flex-1">{url}</span>
+                      <div key={index} className="p-3 rounded-lg bg-muted/50">
+                        <span className="text-xs text-muted-foreground">{url}</span>
                       </div>
                     ))}
+                    <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 mt-4">
+                      <p className="text-xs text-muted-foreground">
+                        <strong>Note:</strong> These are fictional examples showing common patterns in fake news URLs. 
+                        They won't work in the URL checker. Use the real news URLs above for testing.
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
