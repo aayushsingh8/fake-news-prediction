@@ -65,11 +65,11 @@ const SampleDatasets = () => {
 
   const urlSamples = {
     real: [
-      "https://www.bbc.com/news/articles/c20gx2z3ynzo",
-      "https://www.reuters.com/technology/",
-      "https://www.theguardian.com/world",
-      "https://apnews.com/hub/technology",
-      "https://www.npr.org/sections/news/"
+      "https://lite.cnn.com/",
+      "https://www.bbc.com/news",
+      "https://www.reuters.com/world/",
+      "https://apnews.com/",
+      "https://text.npr.org/"
     ],
     fake: [
       "https://fake-news-site.com/shocking-celebrity-secret",
