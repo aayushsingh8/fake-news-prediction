@@ -6,11 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ResultCard from "./ResultCard";
 
-// Example working news URLs for testing
+// Example working news URLs for testing (homepage/section pages with articles)
 const EXAMPLE_URLS = [
-  "https://www.bbc.com/news/articles/c20gx2z3ynzo",
-  "https://www.reuters.com/technology/",
-  "https://www.theguardian.com/world",
+  "https://lite.cnn.com/",
+  "https://www.bbc.com/news",
+  "https://text.npr.org/",
 ];
 
 const UrlChecker = () => {
@@ -122,7 +122,7 @@ const UrlChecker = () => {
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://www.bbc.com/news/articles/c20gx2z3ynzo"
+              placeholder="https://lite.cnn.com/ or https://www.bbc.com/news"
               className="pl-10 bg-input/50 border-border focus:border-primary transition-colors"
             />
           </div>
@@ -144,7 +144,7 @@ const UrlChecker = () => {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Paste any existing news article URL from major news sites (BBC, Reuters, Guardian, etc.). Note: Paywalled sites may not work. Click "Try Example" for tested URLs.
+          Works best with free news sites (BBC, CNN, Reuters, AP News). Paywalled sites (NYTimes, WSJ) and sites blocking bots won't work. Use homepage or section URLs for best results.
         </p>
       </div>
 
