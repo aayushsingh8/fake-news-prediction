@@ -8,9 +8,9 @@ import ResultCard from "./ResultCard";
 
 // Example working news URLs for testing
 const EXAMPLE_URLS = [
-  "https://www.bbc.com/news/technology",
-  "https://www.reuters.com/world/",
-  "https://www.theguardian.com/technology",
+  "https://www.bbc.com/news/articles/c20gx2z3ynzo",
+  "https://www.reuters.com/technology/",
+  "https://www.theguardian.com/world",
 ];
 
 const UrlChecker = () => {
@@ -122,7 +122,7 @@ const UrlChecker = () => {
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://www.bbc.com/news/technology"
+              placeholder="https://www.bbc.com/news/articles/c20gx2z3ynzo"
               className="pl-10 bg-input/50 border-border focus:border-primary transition-colors"
             />
           </div>
@@ -144,7 +144,7 @@ const UrlChecker = () => {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Paste any existing news article URL from major news sites. Click "Try Example" to test with a working URL.
+          Paste any existing news article URL from major news sites (BBC, Reuters, Guardian, etc.). Note: Paywalled sites may not work. Click "Try Example" for tested URLs.
         </p>
       </div>
 

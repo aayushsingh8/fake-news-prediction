@@ -65,11 +65,11 @@ const SampleDatasets = () => {
 
   const urlSamples = {
     real: [
-      "https://www.nytimes.com/2024/11/24/world/asia/india-bollywood-dharmendra-dead.html",
-      "https://www.bbc.com/news/world-europe-67890123",
-      "https://www.reuters.com/world/americas/us-elections-2024",
-      "https://www.theguardian.com/environment/climate-crisis",
-      "https://apnews.com/article/technology-artificial-intelligence"
+      "https://www.bbc.com/news/articles/c20gx2z3ynzo",
+      "https://www.reuters.com/technology/",
+      "https://www.theguardian.com/world",
+      "https://apnews.com/hub/technology",
+      "https://www.npr.org/sections/news/"
     ],
     fake: [
       "https://fake-news-site.com/shocking-celebrity-secret",
