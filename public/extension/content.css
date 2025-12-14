@@ -1,0 +1,109 @@
+#truth-guard-overlay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  animation: tg-slide-in 0.3s ease-out;
+}
+
+@keyframes tg-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+#truth-guard-overlay.tg-fade-out {
+  animation: tg-fade-out 0.3s ease-out forwards;
+}
+
+@keyframes tg-fade-out {
+  to {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
+.tg-overlay {
+  width: 300px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.tg-overlay.tg-real {
+  background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
+  border: 2px solid #22c55e;
+}
+
+.tg-overlay.tg-fake {
+  background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
+  border: 2px solid #ef4444;
+}
+
+.tg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.tg-logo {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.tg-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.tg-close:hover {
+  opacity: 1;
+}
+
+.tg-body {
+  padding: 20px;
+}
+
+.tg-label {
+  font-size: 32px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.tg-real .tg-label {
+  color: #22c55e;
+}
+
+.tg-fake .tg-label {
+  color: #ef4444;
+}
+
+.tg-confidence {
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 12px;
+}
+
+.tg-explanation {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+}

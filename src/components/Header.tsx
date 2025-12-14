@@ -2,6 +2,7 @@ import { Shield, Home, Brain, HelpCircle, Database, Users, Menu, X } from "lucid
 import { NavLink } from "@/components/NavLink";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -65,6 +66,7 @@ const Header = () => {
           </nav>
           
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full glass-card">
               <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
               <span className="text-sm text-muted-foreground">ML Models Active</span>
