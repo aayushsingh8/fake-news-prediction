@@ -65,79 +65,135 @@ async function getBertPrediction(text: string) {
 }
 
 async function getMLPrediction(text: string, sourceUrl?: string) {
-  console.log("Calling ML model (Gemini Pro)...");
+  console.log("Calling ML model (Gemini 2.5 Pro)...");
   
-  // Extended list of credible news sources
-  const credibleSources = [
-    'nytimes.com', 'bbc.com', 'bbc.co.uk', 'reuters.com', 'apnews.com', 'theguardian.com',
-    'washingtonpost.com', 'wsj.com', 'cnn.com', 'npr.org', 'time.com',
-    'bloomberg.com', 'ft.com', 'economist.com', 'aljazeera.com', 'forbes.com',
-    'newsweek.com', 'usatoday.com', 'cbsnews.com', 'nbcnews.com', 'abcnews.go.com',
-    'politico.com', 'theatlantic.com', 'newyorker.com', 'latimes.com', 'chicagotribune.com',
-    'pbs.org', 'c-span.org', 'nature.com', 'sciencemag.org', 'scientificamerican.com'
+  // Extended and categorized credible news sources
+  const tier1Sources = [
+    'nytimes.com', 'bbc.com', 'bbc.co.uk', 'reuters.com', 'apnews.com',
+    'washingtonpost.com', 'wsj.com', 'ft.com', 'economist.com', 'theguardian.com',
+    'pbs.org', 'npr.org', 'c-span.org'
+  ];
+  
+  const tier2Sources = [
+    'cnn.com', 'nbcnews.com', 'cbsnews.com', 'abcnews.go.com', 'time.com',
+    'bloomberg.com', 'forbes.com', 'aljazeera.com', 'politico.com', 'theatlantic.com',
+    'newyorker.com', 'latimes.com', 'chicagotribune.com', 'usatoday.com',
+    'newsweek.com', 'nature.com', 'sciencemag.org', 'scientificamerican.com',
+    'axios.com', 'thehill.com', 'foreignpolicy.com', 'vox.com', 'slate.com',
+    'indianexpress.com', 'thehindu.com', 'hindustantimes.com', 'ndtv.com',
+    'timesofindia.indiatimes.com', 'livemint.com', 'moneycontrol.com',
+    'thewire.in', 'scroll.in', 'firstpost.com', 'news18.com', 'india.com',
+    'dnaindia.com', 'deccanherald.com', 'telegraphindia.com', 'tribuneindia.com'
   ];
   
   // Known misinformation/satire sites
-  const suspiciousSources = [
-    'theonion.com', 'babylonbee.com', 'clickhole.com', 'infowars.com', 'naturalnews.com',
-    'beforeitsnews.com', 'yournewswire.com', 'worldnewsdailyreport.com'
+  const satireSites = [
+    'theonion.com', 'babylonbee.com', 'clickhole.com', 'newsthump.com', 
+    'thedailymash.co.uk', 'faking-news.com'
+  ];
+  
+  const misinformationSites = [
+    'infowars.com', 'naturalnews.com', 'beforeitsnews.com', 'yournewswire.com',
+    'worldnewsdailyreport.com', 'dailybuzzlive.com', 'newsbreakshere.com',
+    'conservativetribune.com', 'libertywriters.com', 'americannews.com',
+    'thelastlineofdefense.org', 'abcnews.com.co', 'dailywire.co', 'usatoday.com.co'
   ];
   
   let sourceContext = "";
-  let sourceWeight = 0;
+  let sourceCredibility = "unknown";
   
   if (sourceUrl) {
     const urlLower = sourceUrl.toLowerCase();
-    const isCredible = credibleSources.some(domain => urlLower.includes(domain));
-    const isSuspicious = suspiciousSources.some(domain => urlLower.includes(domain));
     
-    if (isCredible) {
-      sourceContext = `\n\nCRITICAL SOURCE CONTEXT: This content is from a VERIFIED CREDIBLE news source (${sourceUrl}). Major news organizations have editorial standards, fact-checking processes, and legal accountability. Unless there are OBVIOUS signs of satire or the content contradicts basic facts, this should be classified as REAL.`;
-      sourceWeight = 0.3; // Boost confidence for credible sources
-    } else if (isSuspicious) {
-      sourceContext = `\n\nWARNING: This content is from a KNOWN MISINFORMATION or SATIRE source (${sourceUrl}). Apply extra scrutiny and lean toward FAKE unless the content is clearly factual.`;
-      sourceWeight = -0.2; // Reduce confidence
+    if (tier1Sources.some(domain => urlLower.includes(domain))) {
+      sourceCredibility = "tier1";
+      sourceContext = `\n\n🔒 SOURCE VERIFICATION: TIER 1 CREDIBLE SOURCE (${sourceUrl})
+This is a top-tier news organization with:
+- Rigorous editorial standards and fact-checking
+- Legal accountability and corrections policies
+- Established reputation built over decades
+- Professional journalists with verified sourcing
+
+CLASSIFICATION GUIDANCE: Unless the content contains OBVIOUS satire markers or factual impossibilities, classify as REAL. Breaking news from these sources is typically accurate.`;
+    } else if (tier2Sources.some(domain => urlLower.includes(domain))) {
+      sourceCredibility = "tier2";
+      sourceContext = `\n\n✅ SOURCE VERIFICATION: TIER 2 CREDIBLE SOURCE (${sourceUrl})
+This is an established news organization with editorial standards.
+
+CLASSIFICATION GUIDANCE: Apply standard analysis. Lean toward REAL unless content shows clear misinformation markers.`;
+    } else if (satireSites.some(domain => urlLower.includes(domain))) {
+      sourceCredibility = "satire";
+      sourceContext = `\n\n🎭 SOURCE VERIFICATION: KNOWN SATIRE SITE (${sourceUrl})
+This is a satire/parody publication. Content is intentionally fictional for humor.
+
+CLASSIFICATION GUIDANCE: This is REAL satire (honest about being fiction), not fake news trying to deceive.`;
+    } else if (misinformationSites.some(domain => urlLower.includes(domain))) {
+      sourceCredibility = "misinformation";
+      sourceContext = `\n\n⚠️ SOURCE VERIFICATION: KNOWN MISINFORMATION SOURCE (${sourceUrl})
+This site has a documented history of publishing false information.
+
+CLASSIFICATION GUIDANCE: Apply maximum scrutiny. Classify as FAKE unless content can be independently verified.`;
     }
   }
   
-  const systemPrompt = `You are an expert fact-checker and news verification specialist with extensive training in journalism, media literacy, and misinformation detection.
+  const systemPrompt = `You are an elite fact-checker with expertise in journalism, media literacy, and misinformation detection. Your accuracy rate must exceed 98%.
 
-ACCURACY IS PARAMOUNT - Follow these rules strictly:
+CRITICAL RULES FOR HIGH ACCURACY:
 
-1. SOURCE CREDIBILITY (HIGHEST PRIORITY):
-   - Content from established news organizations (NYT, BBC, Reuters, AP, CNN, etc.) should be presumed REAL
-   - These organizations have editorial oversight, fact-checking, and legal accountability
-   - Do NOT assume breaking news or celebrity deaths are fake when from credible sources
+1. SOURCE CREDIBILITY (40% weight):
+   - Tier 1 sources (NYT, BBC, Reuters, AP, WSJ, Guardian, PBS, NPR): Trust by default
+   - Tier 2 sources (CNN, Forbes, Bloomberg, etc.): High trust with verification
+   - Unknown sources: Neutral stance, analyze content carefully
+   - Known misinformation sites: High skepticism
 
-2. CONTENT ANALYSIS MARKERS:
-   REAL NEWS indicators:
-   - Professional journalistic writing with proper attribution
-   - Specific quotes from named sources, officials, or representatives
-   - Verifiable details (dates, locations, specific numbers)
-   - Balanced reporting showing multiple perspectives
-   - Proper context and background information
-   - Follows AP/Reuters style guidelines
+2. CONTENT ANALYSIS (40% weight):
    
-   FAKE NEWS indicators:
-   - Sensationalist headlines with excessive punctuation (!!!)
-   - No verifiable sources or "anonymous insider" only
-   - Emotionally manipulative language designed to provoke outrage
-   - Logical impossibilities or contradictions
-   - Claims that are too convenient for a political narrative
-   - Poor grammar/spelling in supposedly professional news
-   - Completely fabricated events with no corroboration
+   REAL NEWS MARKERS (presence increases REAL probability):
+   ✓ Professional AP/Reuters style writing
+   ✓ Named sources with verifiable credentials
+   ✓ Specific dates, locations, and verifiable details
+   ✓ Balanced reporting showing multiple viewpoints
+   ✓ Proper attribution and quotes
+   ✓ Context and background information
+   ✓ Recent events from credible sources (breaking news IS often real)
+   ✓ Celebrity/public figure news from credible outlets (deaths, marriages, etc. are typically accurate)
+   
+   FAKE NEWS MARKERS (presence increases FAKE probability):
+   ✗ Sensationalist headlines (ALL CAPS, !!!, "SHOCKING")
+   ✗ Anonymous or vague sources only
+   ✗ Emotionally manipulative language
+   ✗ Claims that are "too perfect" for a political narrative
+   ✗ No corroborating sources or links
+   ✗ Logical impossibilities or internal contradictions
+   ✗ Poor grammar/spelling in "professional" articles
+   ✗ Requests for money or personal info
+   ✗ Domain names mimicking real news (abcnews.com.co)
 
-3. CLASSIFICATION RULES:
-   - When in doubt between credible-looking content, favor REAL
-   - Satire clearly labeled as satire = REAL (it's honest about being satire)
-   - Opinion pieces from news sites = REAL (they're labeled as opinion)
-   - Unverified claims from unknown sources = FAKE
+3. TEMPORAL CONTEXT (20% weight):
+   - Breaking news from credible sources = likely REAL
+   - Old debunked stories resurfacing = likely FAKE
+   - Future-dated events reported as past = FAKE
+   - Current events matching known news cycles = likely REAL
 
-Respond ONLY in this exact JSON format:
+CLASSIFICATION DECISION MATRIX:
+- Tier 1 source + professional content = REAL (95%+ confidence)
+- Tier 2 source + professional content = REAL (85%+ confidence)  
+- Unknown source + professional content = REAL (70% confidence)
+- Unknown source + mixed signals = analyze carefully (50-70%)
+- Any source + multiple fake markers = FAKE (80%+ confidence)
+- Known misinformation source = FAKE (90%+ confidence)
+
+AVOID FALSE POSITIVES:
+- Do NOT classify credible breaking news as fake just because it's surprising
+- Do NOT assume celebrity deaths/events are fake when from credible sources
+- Do NOT penalize opinion pieces clearly labeled as opinion
+- Do NOT penalize regional/international news from credible local sources
+
+Respond ONLY in this JSON format:
 {
   "label": "FAKE" or "REAL",
   "confidence": 0.0 to 1.0,
-  "reasoning": "Concise explanation focusing on key evidence"
+  "reasoning": "2-3 sentence explanation citing specific evidence"
 }${sourceContext}`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -150,9 +206,9 @@ Respond ONLY in this exact JSON format:
       model: "google/gemini-2.5-pro",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Analyze this news content carefully and determine if it's FAKE or REAL:\n\n${text}` },
+        { role: "user", content: `Analyze this news content and classify as REAL or FAKE:\n\n${text.substring(0, 8000)}` },
       ],
-      temperature: 0.1,
+      temperature: 0.05,
     }),
   });
 
@@ -167,17 +223,25 @@ Respond ONLY in this exact JSON format:
   console.log("ML model response:", content);
 
   try {
-    // Extract JSON from response (handle markdown code blocks)
     let jsonStr = content.trim();
     if (jsonStr.startsWith("```")) {
       jsonStr = jsonStr.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     }
     const result = JSON.parse(jsonStr);
     
+    // Apply source credibility boost
+    let adjustedScore = result.confidence;
+    if (sourceCredibility === "tier1" && result.label === "REAL") {
+      adjustedScore = Math.min(0.98, adjustedScore + 0.1);
+    } else if (sourceCredibility === "misinformation" && result.label === "FAKE") {
+      adjustedScore = Math.min(0.98, adjustedScore + 0.1);
+    }
+    
     return {
       label: result.label,
-      score: result.confidence,
+      score: adjustedScore,
       reasoning: result.reasoning,
+      sourceCredibility,
     };
   } catch (e) {
     console.error("Failed to parse ML model response:", e);

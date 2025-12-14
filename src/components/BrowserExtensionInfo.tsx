@@ -1,74 +1,67 @@
-import { ExternalLink, Chrome, Puzzle, Copy, Check } from "lucide-react";
+import { ExternalLink, Chrome, Puzzle, Download, FolderOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 const BrowserExtensionInfo = () => {
-  const [copied, setCopied] = useState(false);
-  const { toast } = useToast();
-
-  const bookmarkletCode = `javascript:(function(){var url=window.location.href;window.open('${window.location.origin}?check='+encodeURIComponent(url),'_blank');})();`;
-
-  const copyBookmarklet = () => {
-    navigator.clipboard.writeText(bookmarkletCode);
-    setCopied(true);
-    toast({
-      title: "Copied!",
-      description: "Drag this to your bookmarks bar to use as a quick checker",
-    });
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <Card className="glass-card">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Puzzle className="w-5 h-5 text-primary" />
-          <CardTitle>Browser Integration</CardTitle>
+          <CardTitle>Browser Extension</CardTitle>
         </div>
         <CardDescription>
-          Check URLs directly from any webpage using our bookmarklet
+          Analyze news articles directly on any webpage without leaving the page
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Bookmarklet */}
+        {/* Chrome Extension */}
         <div className="p-4 rounded-lg bg-muted/30 border border-border space-y-3">
           <div className="flex items-center gap-2">
             <Chrome className="w-5 h-5 text-accent" />
-            <h4 className="font-medium">Quick Check Bookmarklet</h4>
+            <h4 className="font-medium">Chrome Extension</h4>
           </div>
           <p className="text-sm text-muted-foreground">
-            Drag this button to your bookmarks bar, then click it on any webpage to instantly check the URL:
+            Install our Chrome extension to check any news article instantly. Results appear as an overlay on the page - no redirects!
           </p>
           <div className="flex gap-2 flex-wrap">
             <a
-              href={bookmarkletCode}
-              className="px-4 py-2 bg-gradient-to-r from-primary to-accent text-primary-foreground rounded-lg font-medium text-sm cursor-move"
-              onClick={(e) => e.preventDefault()}
+              href="/extension/extension.zip"
+              download="truth-guard-extension.zip"
+              className="inline-block"
             >
-              📰 Check This Page
+              <Button variant="default" size="sm" className="gap-2">
+                <Download className="w-4 h-4" />
+                Download Extension
+              </Button>
             </a>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={copyBookmarklet}
-              className="text-xs"
-            >
-              {copied ? <Check className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
-              {copied ? 'Copied!' : 'Copy Code'}
-            </Button>
           </div>
         </div>
 
-        {/* Instructions */}
+        {/* Installation Instructions */}
         <div className="space-y-2">
-          <h4 className="font-medium text-sm">How to Use:</h4>
+          <h4 className="font-medium text-sm">Installation Steps:</h4>
+          <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-2">
+            <li>Download the extension ZIP file above</li>
+            <li>Unzip the file to a folder on your computer</li>
+            <li>Open Chrome and go to <code className="px-1 py-0.5 bg-muted rounded text-xs">chrome://extensions</code></li>
+            <li>Enable "Developer mode" in the top right corner</li>
+            <li>Click "Load unpacked" and select the unzipped folder</li>
+            <li>The Truth Guard icon will appear in your toolbar</li>
+          </ol>
+        </div>
+
+        {/* How to Use */}
+        <div className="p-4 rounded-lg bg-muted/30 border border-border space-y-2">
+          <div className="flex items-center gap-2">
+            <FolderOpen className="w-4 h-4 text-accent" />
+            <h4 className="font-medium text-sm">How to Use</h4>
+          </div>
           <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-1">
-            <li>Drag the "Check This Page" button to your bookmarks bar</li>
             <li>Visit any news article you want to verify</li>
-            <li>Click the bookmark to analyze the current page</li>
-            <li>Results will open in a new tab</li>
+            <li>Click the Truth Guard icon in your toolbar</li>
+            <li>Click "Analyze This Page"</li>
+            <li>Results will appear as an overlay on the page!</li>
           </ol>
         </div>
 
