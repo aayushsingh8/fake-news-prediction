@@ -67,68 +67,77 @@ async function getBertPrediction(text: string) {
 async function getMLPrediction(text: string, sourceUrl?: string) {
   console.log("Calling ML model (Gemini Pro)...");
   
-  // Check if source is from a credible news organization
+  // Extended list of credible news sources
   const credibleSources = [
-    'nytimes.com', 'bbc.com', 'reuters.com', 'apnews.com', 'theguardian.com',
+    'nytimes.com', 'bbc.com', 'bbc.co.uk', 'reuters.com', 'apnews.com', 'theguardian.com',
     'washingtonpost.com', 'wsj.com', 'cnn.com', 'npr.org', 'time.com',
     'bloomberg.com', 'ft.com', 'economist.com', 'aljazeera.com', 'forbes.com',
     'newsweek.com', 'usatoday.com', 'cbsnews.com', 'nbcnews.com', 'abcnews.go.com',
-    'politico.com', 'theatlantic.com', 'newyorker.com', 'latimes.com', 'chicagotribune.com'
+    'politico.com', 'theatlantic.com', 'newyorker.com', 'latimes.com', 'chicagotribune.com',
+    'pbs.org', 'c-span.org', 'nature.com', 'sciencemag.org', 'scientificamerican.com'
+  ];
+  
+  // Known misinformation/satire sites
+  const suspiciousSources = [
+    'theonion.com', 'babylonbee.com', 'clickhole.com', 'infowars.com', 'naturalnews.com',
+    'beforeitsnews.com', 'yournewswire.com', 'worldnewsdailyreport.com'
   ];
   
   let sourceContext = "";
+  let sourceWeight = 0;
+  
   if (sourceUrl) {
-    const isCredible = credibleSources.some(domain => sourceUrl.toLowerCase().includes(domain));
+    const urlLower = sourceUrl.toLowerCase();
+    const isCredible = credibleSources.some(domain => urlLower.includes(domain));
+    const isSuspicious = suspiciousSources.some(domain => urlLower.includes(domain));
+    
     if (isCredible) {
-      sourceContext = `\n\nIMPORTANT CONTEXT: This content is from a verified credible news source (${sourceUrl}). Major news organizations have editorial standards, fact-checking processes, and legal accountability. Content from these sources should be strongly presumed REAL unless there are obvious signs of satire, opinion pieces, or the content explicitly contradicts the source's reporting style.`;
+      sourceContext = `\n\nCRITICAL SOURCE CONTEXT: This content is from a VERIFIED CREDIBLE news source (${sourceUrl}). Major news organizations have editorial standards, fact-checking processes, and legal accountability. Unless there are OBVIOUS signs of satire or the content contradicts basic facts, this should be classified as REAL.`;
+      sourceWeight = 0.3; // Boost confidence for credible sources
+    } else if (isSuspicious) {
+      sourceContext = `\n\nWARNING: This content is from a KNOWN MISINFORMATION or SATIRE source (${sourceUrl}). Apply extra scrutiny and lean toward FAKE unless the content is clearly factual.`;
+      sourceWeight = -0.2; // Reduce confidence
     }
   }
   
-  const systemPrompt = `You are an expert news verification system with deep knowledge of journalism, fact-checking, and media literacy.
+  const systemPrompt = `You are an expert fact-checker and news verification specialist with extensive training in journalism, media literacy, and misinformation detection.
 
-CRITICAL INSTRUCTIONS:
-1. CREDIBLE SOURCES: Content from major established news organizations (NY Times, BBC, Reuters, AP, Washington Post, etc.) should be strongly presumed REAL. These organizations have:
-   - Professional editorial standards and fact-checking
-   - Legal accountability for false reporting
-   - Decades of journalistic reputation
-   - Multiple layers of review before publication
+ACCURACY IS PARAMOUNT - Follow these rules strictly:
 
-2. DO NOT assume celebrity deaths or major events are hoaxes when reported by credible sources
-3. Focus on journalistic quality markers, not just claim sensationalism
-4. Consider the writing style, attribution patterns, and editorial standards
+1. SOURCE CREDIBILITY (HIGHEST PRIORITY):
+   - Content from established news organizations (NYT, BBC, Reuters, AP, CNN, etc.) should be presumed REAL
+   - These organizations have editorial oversight, fact-checking, and legal accountability
+   - Do NOT assume breaking news or celebrity deaths are fake when from credible sources
 
-INDICATORS OF REAL NEWS FROM CREDIBLE SOURCES:
-- Professional journalistic writing style
-- Specific attributions (quotes from officials, family, representatives)
-- Detailed context and background information
-- Consistent with the publication's reporting standards
-- Multiple verifiable details (dates, locations, circumstances)
-- Quotes from named sources or official statements
-- Follow-up details and comprehensive coverage
+2. CONTENT ANALYSIS MARKERS:
+   REAL NEWS indicators:
+   - Professional journalistic writing with proper attribution
+   - Specific quotes from named sources, officials, or representatives
+   - Verifiable details (dates, locations, specific numbers)
+   - Balanced reporting showing multiple perspectives
+   - Proper context and background information
+   - Follows AP/Reuters style guidelines
+   
+   FAKE NEWS indicators:
+   - Sensationalist headlines with excessive punctuation (!!!)
+   - No verifiable sources or "anonymous insider" only
+   - Emotionally manipulative language designed to provoke outrage
+   - Logical impossibilities or contradictions
+   - Claims that are too convenient for a political narrative
+   - Poor grammar/spelling in supposedly professional news
+   - Completely fabricated events with no corroboration
 
-INDICATORS OF FAKE NEWS:
-- Claims from unknown/suspicious sources with no verification
-- Extreme emotional manipulation without factual basis
-- Complete fabrication of events with zero credible attribution
-- Content that contradicts the supposed source's style
-- No verifiable details or all sources are "anonymous"
-- Logical impossibilities or obvious contradictions
-- Appears on known misinformation websites
-
-EVALUATION FRAMEWORK:
-1. Source credibility: Is this from a reputable news organization? (HIGH WEIGHT)
-2. Journalistic standards: Does it follow professional reporting practices?
-3. Verifiable details: Are there specific, checkable facts?
-4. Attribution quality: Are sources named and credible?
-5. Writing quality: Is it professionally written?
-
-When content is from major news organizations, it should be marked REAL unless there are STRONG indicators of satire, opinion, or fabrication.
+3. CLASSIFICATION RULES:
+   - When in doubt between credible-looking content, favor REAL
+   - Satire clearly labeled as satire = REAL (it's honest about being satire)
+   - Opinion pieces from news sites = REAL (they're labeled as opinion)
+   - Unverified claims from unknown sources = FAKE
 
 Respond ONLY in this exact JSON format:
 {
   "label": "FAKE" or "REAL",
   "confidence": 0.0 to 1.0,
-  "reasoning": "detailed explanation of your decision based on source credibility and journalistic standards"
+  "reasoning": "Concise explanation focusing on key evidence"
 }${sourceContext}`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

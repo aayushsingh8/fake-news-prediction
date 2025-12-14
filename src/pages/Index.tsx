@@ -1,13 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import TextChecker from "@/components/TextChecker";
 import UrlChecker from "@/components/UrlChecker";
 import DocumentChecker from "@/components/DocumentChecker";
+import ComparisonView from "@/components/ComparisonView";
+import BrowserExtensionInfo from "@/components/BrowserExtensionInfo";
+import { useSearchParams } from "react-router-dom";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("text");
+  const [searchParams] = useSearchParams();
+  const [initialUrl, setInitialUrl] = useState<string | null>(null);
+
+  // Handle URL check from bookmarklet
+  useEffect(() => {
+    const checkUrl = searchParams.get('check');
+    if (checkUrl) {
+      setInitialUrl(checkUrl);
+      setActiveTab('url');
+    }
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -29,24 +43,36 @@ const Index = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8 glass-card p-1.5 h-auto">
+            <TabsList className="grid w-full grid-cols-5 mb-8 glass-card p-1.5 h-auto">
               <TabsTrigger 
                 value="text" 
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 text-xs md:text-sm"
               >
                 Text Checker
               </TabsTrigger>
               <TabsTrigger 
                 value="url"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 text-xs md:text-sm"
               >
                 URL Predictor
               </TabsTrigger>
               <TabsTrigger 
                 value="document"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 text-xs md:text-sm"
               >
-                Document Upload
+                Document
+              </TabsTrigger>
+              <TabsTrigger 
+                value="compare"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 text-xs md:text-sm"
+              >
+                Compare
+              </TabsTrigger>
+              <TabsTrigger 
+                value="extension"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 text-xs md:text-sm"
+              >
+                Browser
               </TabsTrigger>
             </TabsList>
 
@@ -55,11 +81,19 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="url" className="animate-fade-in">
-              <UrlChecker />
+              <UrlChecker initialUrl={initialUrl} />
             </TabsContent>
 
             <TabsContent value="document" className="animate-fade-in">
               <DocumentChecker />
+            </TabsContent>
+
+            <TabsContent value="compare" className="animate-fade-in">
+              <ComparisonView />
+            </TabsContent>
+
+            <TabsContent value="extension" className="animate-fade-in">
+              <BrowserExtensionInfo />
             </TabsContent>
           </Tabs>
         </main>
