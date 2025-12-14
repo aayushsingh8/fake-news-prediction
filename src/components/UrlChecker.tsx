@@ -23,9 +23,14 @@ interface HistoryItem {
   url: string;
   timestamp: number;
   result?: string;
+  confidence?: number;
 }
 
-const UrlChecker = () => {
+interface UrlCheckerProps {
+  initialUrl?: string | null;
+}
+
+const UrlChecker = ({ initialUrl }: UrlCheckerProps) => {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -45,14 +50,27 @@ const UrlChecker = () => {
     }
   }, []);
 
+  // Handle initial URL from bookmarklet
+  useEffect(() => {
+    if (initialUrl) {
+      setUrl(initialUrl);
+      // Auto-analyze after a short delay
+      const timer = setTimeout(() => {
+        handleAnalyze(initialUrl);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [initialUrl]);
+
   // Save history to localStorage
-  const saveToHistory = (url: string, result?: string) => {
+  const saveToHistory = (url: string, result?: string, confidence?: number) => {
     const newItem: HistoryItem = {
       url,
       timestamp: Date.now(),
-      result
+      result,
+      confidence
     };
-    const newHistory = [newItem, ...history.filter(item => item.url !== url)].slice(0, 10);
+    const newHistory = [newItem, ...history.filter(item => item.url !== url)].slice(0, 20);
     setHistory(newHistory);
     localStorage.setItem("urlHistory", JSON.stringify(newHistory));
   };
@@ -66,8 +84,10 @@ const UrlChecker = () => {
     });
   };
 
-  const handleAnalyze = async () => {
-    if (!url.trim()) {
+  const handleAnalyze = async (urlToAnalyze?: string) => {
+    const targetUrl = urlToAnalyze || url;
+    
+    if (!targetUrl.trim()) {
       toast({
         title: "Error",
         description: "Please enter a valid URL",
@@ -78,7 +98,7 @@ const UrlChecker = () => {
 
     // Basic URL validation
     try {
-      new URL(url);
+      new URL(targetUrl);
     } catch {
       toast({
         title: "Invalid URL",
@@ -94,7 +114,7 @@ const UrlChecker = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("extract-url", {
-        body: { url },
+        body: { url: targetUrl },
       });
 
       if (error) {
@@ -117,7 +137,7 @@ const UrlChecker = () => {
 
       setResult(data.prediction);
       setExtractedText(data.extracted_text);
-      saveToHistory(url, data.prediction?.label);
+      saveToHistory(targetUrl, data.prediction?.label, data.prediction?.score);
       toast({
         title: "Prediction Complete",
         description: "Article extracted and predicted successfully",
@@ -179,7 +199,7 @@ const UrlChecker = () => {
           </div>
           
           <Button
-            onClick={handleAnalyze}
+            onClick={() => handleAnalyze()}
             disabled={loading || !url.trim()}
             className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity font-semibold px-8"
           >
