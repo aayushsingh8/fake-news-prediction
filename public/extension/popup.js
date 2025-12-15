@@ -16,6 +16,11 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     const url = tab.url;
     
+    // Validate URL
+    if (!url || url.startsWith('chrome://') || url.startsWith('chrome-extension://') || url.startsWith('about:')) {
+      throw new Error('Cannot analyze browser internal pages. Please navigate to a news article.');
+    }
+    
     // First extract the URL content
     const extractResponse = await fetch(`${API_BASE}/extract-url`, {
       method: 'POST',
@@ -24,42 +29,33 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
     });
     
     if (!extractResponse.ok) {
-      const errData = await extractResponse.json();
-      throw new Error(errData.error || 'Failed to extract article');
+      const errData = await extractResponse.json().catch(() => ({}));
+      throw new Error(errData.error || `Failed to extract article (${extractResponse.status})`);
     }
     
     const extractData = await extractResponse.json();
     
-    // Then predict
-    const predictResponse = await fetch(`${API_BASE}/ensemble-predict`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        text: extractData.text,
-        sourceUrl: url
-      })
-    });
-    
-    if (!predictResponse.ok) {
-      const errData = await predictResponse.json();
-      throw new Error(errData.error || 'Failed to analyze');
+    // Check if we got valid text
+    if (!extractData.text || extractData.text.trim().length < 50) {
+      throw new Error('Could not extract enough text from this page. Try a different article.');
     }
     
-    const predictData = await predictResponse.json();
-    
     // Show result
-    const isReal = predictData.label === 'REAL';
+    const isReal = extractData.label === 'REAL';
     result.className = `result show ${isReal ? 'real' : 'fake'}`;
-    document.getElementById('resultLabel').textContent = predictData.label;
+    document.getElementById('resultLabel').textContent = extractData.label;
     document.getElementById('resultConfidence').textContent = 
-      `Confidence: ${Math.round(predictData.score * 100)}%`;
+      `Confidence: ${Math.round(extractData.score * 100)}%`;
     document.getElementById('resultExplanation').textContent = 
-      predictData.explanation || '';
+      extractData.explanation || '';
     
     // Also send to content script to show overlay
     chrome.tabs.sendMessage(tab.id, {
       type: 'SHOW_RESULT',
-      data: predictData
+      data: extractData
+    }).catch(() => {
+      // Content script might not be loaded on some pages
+      console.log('Could not send to content script');
     });
     
   } catch (err) {
