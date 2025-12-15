@@ -9,7 +9,8 @@ const corsHeaders = {
 const HF_TOKEN = Deno.env.get("HF_TOKEN");
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const MODEL_ID = "jy46604790/Fake-News-Bert-Detect";
-const HF_API_URL = `https://api-inference.huggingface.co/models/${MODEL_ID}`;
+// Updated to new HuggingFace Router API endpoint
+const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${MODEL_ID}`;
 
 function cleanText(text: string): string {
   let cleaned = text.replace(/https?:\/\/\S+/gi, "");
